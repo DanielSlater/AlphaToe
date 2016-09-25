@@ -29,12 +29,12 @@ input_layer, output_layer, variables = create_network(game_spec.board_squares(),
 policy_gradient = tf.reduce_sum(tf.reshape(reward_placeholder, (-1, 1)) * actual_move_placeholder * output_layer)
 train_step = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(-policy_gradient)
 
-with tf.Session() as sess:
-    sess.run(tf.initialize_all_variables())
+with tf.Session() as session:
+    session.run(tf.initialize_all_variables())
 
     if os.path.isfile(NETWORK_FILE_PATH):
         print("loading pre-existing network")
-        load_network(sess, variables, NETWORK_FILE_PATH)
+        load_network(session, variables, NETWORK_FILE_PATH)
 
     mini_batch_board_states, mini_batch_moves, mini_batch_rewards = [], [], []
     episode_number = 1
@@ -43,7 +43,7 @@ with tf.Session() as sess:
 
     def make_training_move(board_state, side):
         mini_batch_board_states.append(np.ravel(board_state) * side)
-        move = get_stochastic_network_move(sess, input_layer, output_layer, board_state, side)
+        move = get_stochastic_network_move(session, input_layer, output_layer, board_state, side)
         mini_batch_moves.append(move)
         return game_spec.flat_move_to_tuple(move.argmax())
 
@@ -66,9 +66,9 @@ with tf.Session() as sess:
             normalized_rewards = mini_batch_rewards - np.mean(mini_batch_rewards)
             normalized_rewards /= np.std(normalized_rewards)
 
-            sess.run(train_step, feed_dict={input_layer: mini_batch_board_states,
-                                            reward_placeholder: normalized_rewards,
-                                            actual_move_placeholder: mini_batch_moves})
+            session.run(train_step, feed_dict={input_layer: mini_batch_board_states,
+                                               reward_placeholder: normalized_rewards,
+                                               actual_move_placeholder: mini_batch_moves})
 
             # clear batches
             del mini_batch_board_states[:]
@@ -78,4 +78,4 @@ with tf.Session() as sess:
         if episode_number % PRINT_RESULTS_EVERY_X == 0:
             print("episode: %s win_rate: %s" % (episode_number, 0.5 + sum(results) / (PRINT_RESULTS_EVERY_X * 2.)))
 
-    save_network(sess, variables, NETWORK_FILE_PATH)
+    save_network(session, variables, NETWORK_FILE_PATH)
