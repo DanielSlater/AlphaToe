@@ -20,7 +20,6 @@ game_spec = TicTacToeXGameSpec(5, 4)
 INPUT_NODES = game_spec.board_squares()
 OUTPUT_NODES = game_spec.outputs()
 
-input_placeholder = tf.placeholder("float", shape=(None, INPUT_NODES))
 reward_placeholder = tf.placeholder("float", shape=(None,))
 actual_move_placeholder = tf.placeholder("float", shape=(None, OUTPUT_NODES))
 
@@ -67,7 +66,7 @@ with tf.Session() as sess:
             normalized_rewards = mini_batch_rewards - np.mean(mini_batch_rewards)
             normalized_rewards /= np.std(normalized_rewards)
 
-            sess.run(train_step, feed_dict={input_placeholder: mini_batch_board_states,
+            sess.run(train_step, feed_dict={input_layer: mini_batch_board_states,
                                             reward_placeholder: normalized_rewards,
                                             actual_move_placeholder: mini_batch_moves})
 
