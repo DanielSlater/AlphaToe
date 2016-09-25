@@ -16,6 +16,8 @@ copy of a given state with a given move applied. This can be useful for doing mi
 import random
 import itertools
 
+from base_game_spec import BaseGameSpec
+
 
 def _new_board(board_size):
     """Return a emprty tic-tac-toe board we can use for simulating a game.
@@ -189,6 +191,26 @@ def random_player(board_state, _):
     """
     moves = list(available_moves(board_state))
     return random.choice(moves)
+
+
+class TicTacToeXGameSpec(BaseGameSpec):
+    def __init__(self, board_size, winning_length):
+        self._winning_length = winning_length
+        self._board_size = board_size
+        self.available_moves = available_moves
+        self.apply_move = apply_move
+
+        self.new_board.__doc__ = _new_board.__doc__
+        self.has_winner.__doc__ = has_winner.__doc__
+
+    def new_board(self):
+        return _new_board(self._board_size)
+
+    def has_winner(self, board_sate):
+        return has_winner(self._board_size, self._winning_length)
+
+    def board_dimensions(self):
+        return self._board_size, self._board_size
 
 
 if __name__ == '__main__':

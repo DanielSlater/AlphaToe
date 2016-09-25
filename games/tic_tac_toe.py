@@ -12,6 +12,8 @@ given state with a given move applied. This can be useful for doing min-max or m
 import random
 import itertools
 
+from base_game_spec import BaseGameSpec
+
 
 def _new_board():
     """Return a emprty tic-tac-toe board we can use for simulating a game.
@@ -156,6 +158,17 @@ def random_player(board_state, _):
     """
     moves = list(available_moves(board_state))
     return random.choice(moves)
+
+
+class TicTacToeGameSpec(BaseGameSpec):
+    def __init__(self):
+        self.available_moves = available_moves
+        self.has_winner = has_winner
+        self.new_board = _new_board
+        self.apply_move = apply_move
+
+    def board_dimensions(self):
+        return 3, 3
 
 
 if __name__ == '__main__':

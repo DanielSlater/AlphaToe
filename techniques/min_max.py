@@ -1,4 +1,3 @@
-from tic_tac_toe import available_moves, apply_move, has_winner
 import sys
 
 
@@ -13,9 +12,9 @@ def _score_line(line):
     return 0
 
 
-def evaluate(board_state):
-    """Get a rough score for how good we think this board position is for the plus_player. Does this based on number of
-    2 in row lines we have.
+def evaluate_tic_tac_toe(board_state):
+    """Get a rough score for how good we think this board position is for the plus_player for the game tic-tac-toe. Does
+    this based on number of 2 in row lines we have.
 
     Args:
         board_state (3x3 tuple of int): The board state we are evaluating
@@ -37,16 +36,17 @@ def evaluate(board_state):
     return score
 
 
-def min_max(board_state, side, max_depth, evaluation_func=evaluate):
+def min_max(game_spec, evaluation_func, board_state, side, max_depth):
     """Runs the min_max_algorithm on a given board_sate for a given side, to a given depth in order to find the best
     move
 
     Args:
+        game_spec (BaseGameSpec): The specification for the game we are evaluating
+        evaluation_func (board_state -> int): Function used to evaluate the position for the plus player
         board_state (3x3 tuple of int): The board state we are evaluating
         side (int): either +1 or -1
         max_depth (int): how deep we want our tree to go before we use the evaluate method to determine how good the
         position is.
-        evaluation_func (board_state -> int): Function used to evaluate the position for the plus player
 
     Returns:
         (best_score(int), best_score_move((int, int)): the move found to be best and what it's min-max score was
@@ -54,14 +54,14 @@ def min_max(board_state, side, max_depth, evaluation_func=evaluate):
     best_score = None
     best_score_move = None
 
-    moves = list(available_moves(board_state))
+    moves = list(game_spec.available_moves(board_state))
     if not moves:
         # this is a draw
         return 0, None
 
     for move in moves:
-        new_board_state = apply_move(board_state, move, side)
-        winner = has_winner(new_board_state)
+        new_board_state = game_spec.apply_move(board_state, move, side)
+        winner = game_spec.has_winner(new_board_state)
         if winner != 0:
             return winner * 10000, move
         else:
@@ -80,17 +80,18 @@ def min_max(board_state, side, max_depth, evaluation_func=evaluate):
     return best_score, best_score_move
 
 
-def min_max_alpha_beta(board_state, side, max_depth, evaluation_func=evaluate, alpha=-sys.float_info.max,
+def min_max_alpha_beta(game_spec, evaluation_func, board_state, side, max_depth, alpha=-sys.float_info.max,
                        beta=sys.float_info.max):
     """Runs the min_max_algorithm on a given board_sate for a given side, to a given depth in order to find the best
     move
 
     Args:
+        game_spec (BaseGameSpec): The specification for the game we are evaluating
+        evaluation_func (board_state -> int): Function used to evaluate the position for the plus player
         board_state (3x3 tuple of int): The board state we are evaluating
         side (int): either +1 or -1
         max_depth (int): how deep we want our tree to go before we use the evaluate method to determine how good the
         position is.
-        evaluation_func (board_state -> int): Function used to evaluate the position for the plus player
         alpha (float): Used when this is called recursively, normally ignore
         beta (float): Used when this is called recursively, normally ignore
 
@@ -98,13 +99,13 @@ def min_max_alpha_beta(board_state, side, max_depth, evaluation_func=evaluate, a
         (best_score(int), best_score_move((int, int)): the move found to be best and what it's min-max score was
     """
     best_score_move = None
-    moves = list(available_moves(board_state))
+    moves = list(game_spec.available_moves(board_state))
     if not moves:
         return 0, None
 
     for move in moves:
-        new_board_state = apply_move(board_state, move, side)
-        winner = has_winner(new_board_state)
+        new_board_state = game_spec.apply_move(board_state, move, side)
+        winner = game_spec.has_winner(new_board_state)
         if winner != 0:
             return winner * 10000, move
         else:
