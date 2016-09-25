@@ -1,96 +1,82 @@
 import collections
+import os
+
 import numpy as np
 import tensorflow as tf
 
-from games.tic_tac_toe import TicTacToeGameSpec
-
-# to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
-game_spec = TicTacToeGameSpec()
+from games.tic_tac_toe_x import TicTacToeXGameSpec
+from network_helpers import create_network, load_network, get_stochastic_network_move, save_network
 
 HIDDEN_NODES = (100, 100, 100)  # number of hidden layer neurons
-INPUT_NODES = game_spec.board_squares()
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
-OUTPUT_NODES = INPUT_NODES
 PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
+NETWORK_FILE_PATH = 'current_network.p'
+NUMBER_OF_GAMES_TO_RUN = 100000
+
+# to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
+game_spec = TicTacToeXGameSpec(5, 4)
+
+INPUT_NODES = game_spec.board_squares()
+OUTPUT_NODES = game_spec.outputs()
 
 input_placeholder = tf.placeholder("float", shape=(None, INPUT_NODES))
 reward_placeholder = tf.placeholder("float", shape=(None,))
 actual_move_placeholder = tf.placeholder("float", shape=(None, OUTPUT_NODES))
 
-hidden_weights_1 = tf.Variable(tf.truncated_normal((INPUT_NODES, HIDDEN_NODES[0]), stddev=1. / np.sqrt(INPUT_NODES)))
-hidden_weights_2 = tf.Variable(
-    tf.truncated_normal((HIDDEN_NODES[0], HIDDEN_NODES[1]), stddev=1. / np.sqrt(HIDDEN_NODES[0])))
-hidden_weights_3 = tf.Variable(
-    tf.truncated_normal((HIDDEN_NODES[1], HIDDEN_NODES[2]), stddev=1. / np.sqrt(HIDDEN_NODES[1])))
-output_weights = tf.Variable(tf.truncated_normal((HIDDEN_NODES[-1], OUTPUT_NODES), stddev=1. / np.sqrt(OUTPUT_NODES)))
-
-hidden_layer_1 = tf.nn.relu(
-    tf.matmul(input_placeholder, hidden_weights_1) + tf.Variable(tf.constant(0.01, shape=(HIDDEN_NODES[0],))))
-hidden_layer_2 = tf.nn.relu(
-    tf.matmul(hidden_layer_1, hidden_weights_2) + tf.Variable(tf.constant(0.01, shape=(HIDDEN_NODES[1],))))
-hidden_layer_3 = tf.nn.relu(
-    tf.matmul(hidden_layer_2, hidden_weights_3) + tf.Variable(tf.constant(0.01, shape=(HIDDEN_NODES[2],))))
-output_layer = tf.nn.softmax(
-    tf.matmul(hidden_layer_3, output_weights) + tf.Variable(tf.constant(0.01, shape=(OUTPUT_NODES,))))
+input_layer, output_layer, variables = create_network(game_spec.board_squares(), HIDDEN_NODES,
+                                                      output_nodes=OUTPUT_NODES)
 
 policy_gradient = tf.reduce_sum(tf.reshape(reward_placeholder, (-1, 1)) * actual_move_placeholder * output_layer)
 train_step = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(-policy_gradient)
 
-sess = tf.Session()
-sess.run(tf.initialize_all_variables())
+with tf.Session() as sess:
+    sess.run(tf.initialize_all_variables())
 
-board_states, actual_moves, rewards = [], [], []
-episode_number = 1
-results = collections.deque()
+    if os.path.isfile(NETWORK_FILE_PATH):
+        print("loading pre-existing network")
+        load_network(sess, variables, NETWORK_FILE_PATH)
 
-
-def make_move(board_state, side):
-    board_state_flat = np.ravel(board_state)
-    board_states.append(board_state_flat)
-    probability_of_actions = sess.run(output_layer, feed_dict={input_placeholder: [board_state_flat]})[0]
-
-    try:
-        move = np.random.multinomial(1, probability_of_actions)
-    except ValueError:
-        # sometimes because of rounding errors we end up with probability_of_actions summing to greater than 1.
-        # so need to reduce slightly to be a valid value
-        move = np.random.multinomial(1, probability_of_actions / (sum(probability_of_actions) + 1e-7))
-
-    actual_moves.append(move)
-
-    move_index = move.argmax()
-    return game_spec.flat_move_to_tuple(move_index)
+    mini_batch_board_states, mini_batch_moves, mini_batch_rewards = [], [], []
+    episode_number = 1
+    results = collections.deque()
 
 
-while True:
-    reward = game_spec.play_game(make_move, game_spec.get_random_player_func())
+    def make_training_move(board_state, side):
+        mini_batch_board_states.append(np.ravel(board_state) * side)
+        move = get_stochastic_network_move(sess, input_layer, output_layer, board_state, side)
+        mini_batch_moves.append(move)
+        return game_spec.flat_move_to_tuple(move.argmax())
 
-    results.append(reward)
-    if len(results) > PRINT_RESULTS_EVERY_X:
-        results.popleft()
 
-    last_game_length = len(board_states) - len(rewards)
+    for episode_number in range(1, NUMBER_OF_GAMES_TO_RUN):
+        reward = game_spec.play_game(make_training_move, game_spec.get_random_player_func())
 
-    # we scale here so winning quickly is better winning slowly and loosing slowly better than loosing quick
-    reward /= float(last_game_length)
+        results.append(reward)
+        if len(results) > PRINT_RESULTS_EVERY_X:
+            results.popleft()
 
-    rewards += ([reward] * last_game_length)
+        last_game_length = len(mini_batch_board_states) - len(mini_batch_rewards)
 
-    episode_number += 1
+        # we scale here so winning quickly is better winning slowly and loosing slowly better than loosing quick
+        reward /= float(last_game_length)
 
-    if episode_number % BATCH_SIZE == 0:
-        normalized_rewards = rewards - np.mean(rewards)
-        normalized_rewards /= np.std(normalized_rewards)
+        mini_batch_rewards += ([reward] * last_game_length)
 
-        sess.run(train_step, feed_dict={input_placeholder: board_states,
-                                        reward_placeholder: normalized_rewards,
-                                        actual_move_placeholder: actual_moves})
+        if episode_number % BATCH_SIZE == 0:
+            normalized_rewards = mini_batch_rewards - np.mean(mini_batch_rewards)
+            normalized_rewards /= np.std(normalized_rewards)
 
-        # clear batches
-        del board_states[:]
-        del actual_moves[:]
-        del rewards[:]
+            sess.run(train_step, feed_dict={input_placeholder: mini_batch_board_states,
+                                            reward_placeholder: normalized_rewards,
+                                            actual_move_placeholder: mini_batch_moves})
 
-    if episode_number % PRINT_RESULTS_EVERY_X == 0:
-        print("episode: %s win_rate: %s" % (episode_number, 0.5 + sum(results) / (PRINT_RESULTS_EVERY_X * 2.)))
+            # clear batches
+            del mini_batch_board_states[:]
+            del mini_batch_moves[:]
+            del mini_batch_rewards[:]
+
+        if episode_number % PRINT_RESULTS_EVERY_X == 0:
+            print("episode: %s win_rate: %s" % (episode_number, 0.5 + sum(results) / (PRINT_RESULTS_EVERY_X * 2.)))
+
+    save_network(sess, variables, NETWORK_FILE_PATH)

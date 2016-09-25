@@ -32,9 +32,7 @@ train_step = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(-policy_gradient)
 current_historical_index = 0
 historical_networks = []
 
-mini_batch_moves = []
-mini_batch_board_states = []
-mini_batch_rewards = []
+mini_batch_board_states, mini_batch_moves, mini_batch_rewards = [], [], []
 results = collections.deque(maxlen=PRINT_RESULTS_EVERY_X)
 
 for _ in range(NUMBER_OF_HISTORICAL_COPIES_TO_KEEP):
