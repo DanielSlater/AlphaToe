@@ -2,10 +2,13 @@ import collections
 import numpy as np
 import tensorflow as tf
 
-from tic_tac_toe import play_game, random_player
+from games.tic_tac_toe import TicTacToeGameSpec
+
+# to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
+game_spec = TicTacToeGameSpec()
 
 HIDDEN_NODES = (100, 100, 100)  # number of hidden layer neurons
-INPUT_NODES = 3 * 3  # board size
+INPUT_NODES = game_spec.board_squares()
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
 OUTPUT_NODES = INPUT_NODES
@@ -61,7 +64,7 @@ def make_move(board_state, side):
 
 
 while True:
-    reward = play_game(make_move, random_player)
+    reward = game_spec.play_game(make_move, game_spec.get_random_player_func())
 
     results.append(reward)
     if len(results) > PRINT_RESULTS_EVERY_X:

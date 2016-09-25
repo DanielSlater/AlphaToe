@@ -1,4 +1,5 @@
 import operator
+import random
 from functools import reduce
 
 
@@ -75,3 +76,14 @@ class BaseGameSpec(object):
                     print("we have a winner, side: %s" % player_turn)
                 return winner
             player_turn = -player_turn
+
+    def get_random_player_func(self):
+        """Return a function that makes moves for the current game by choosing a move randomly
+        NOTE: this move returns the function that makes the random move so should be used like so:
+        Examples:
+            self.play_game(self.get_random_player_func(), self.get_random_player_func())
+
+        Returns:
+            board_state, side (int) -> move : function that plays this game by making random moves
+        """
+        return lambda board_state, side: random.choice(list(self.available_moves(board_state)))
