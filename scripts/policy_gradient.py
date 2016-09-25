@@ -37,8 +37,7 @@ with tf.Session() as session:
         load_network(session, variables, NETWORK_FILE_PATH)
 
     mini_batch_board_states, mini_batch_moves, mini_batch_rewards = [], [], []
-    episode_number = 1
-    results = collections.deque()
+    results = collections.deque(maxlen=PRINT_RESULTS_EVERY_X)
 
 
     def make_training_move(board_state, side):
@@ -52,8 +51,6 @@ with tf.Session() as session:
         reward = game_spec.play_game(make_training_move, game_spec.get_random_player_func())
 
         results.append(reward)
-        if len(results) > PRINT_RESULTS_EVERY_X:
-            results.popleft()
 
         last_game_length = len(mini_batch_board_states) - len(mini_batch_rewards)
 

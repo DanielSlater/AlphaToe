@@ -3,13 +3,15 @@ import numpy as np
 import pickle
 
 
-def create_network(input_nodes, hidden_nodes, output_nodes = None):
+def create_network(input_nodes, hidden_nodes, output_nodes=None, output_softmax=True):
     """Create a network with relu activations at each layer
 
     Args:
         output_nodes: (int): Number of output nodes, if None then number of input nodes is used
         input_nodes (int): The size of the board this network will work on. The output layer will also be this size
         hidden_nodes ([int]): The number of hidden nodes in each hidden layer
+        output_softmax (bool): If True softmax is used in the final layer, otherwise just use the activation with no
+            non-linearity function
 
     Returns:
         (input_layer, output_layer, [variables]) : The final item in the tuple is a list containing all the parameters,
@@ -43,8 +45,9 @@ def create_network(input_nodes, hidden_nodes, output_nodes = None):
         variables.append(output_weights)
         variables.append(output_bias)
 
-        output_layer = tf.nn.softmax(
-            tf.matmul(current_layer, output_weights) + output_bias)
+        output_layer = tf.matmul(current_layer, output_weights) + output_bias
+        if output_softmax:
+            output_layer = tf.nn.softmax(output_layer)
 
     return input_layer, output_layer, variables
 
@@ -82,3 +85,17 @@ def get_stochastic_network_move(session, input_layer, output_layer, board_state,
         move = np.random.multinomial(1, probability_of_actions / (sum(probability_of_actions) + 1e-7))
 
     return move
+
+
+def get_deterministic_network_move(session, input_layer, output_layer, board_state, side):
+    board_state_flat = np.ravel(board_state)
+    if side == -1:
+        board_state_flat = -board_state_flat
+
+    probability_of_actions = session.run(output_layer,
+                                         feed_dict={input_layer: [board_state_flat.ravel()]})[0]
+
+    move = np.argmax(probability_of_actions)
+    one_hot = np.zeros(len(probability_of_actions))
+    one_hot[move] = 1.
+    return one_hot

@@ -1,5 +1,10 @@
+import os
+
 import numpy as np
 import tensorflow as tf
+
+from games.tic_tac_toe_x import TicTacToeXGameSpec
+from network_helpers import create_network, save_network, load_network
 
 
 def load_games():
@@ -11,61 +16,56 @@ def load_games():
     raise Exception("If we had a database of tic-tac-toe games this would load them")
 
 
-HIDDEN_NODES = (100, 100, 100)  # number of hidden layer neurons
+HIDDEN_NODES = (100, 80, 60, 40)  # number of hidden layer neurons
 INPUT_NODES = 3 * 3  # board size
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
-OUTPUT_NODES = INPUT_NODES
 PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
+NETWORK_FILE_PATH = 'current_network.p'
+game_spec = TicTacToeXGameSpec(5, 4)
 
-input_placeholder = tf.placeholder("float", shape=(None, INPUT_NODES))
-actual_move_placeholder = tf.placeholder("float", shape=(None, OUTPUT_NODES))
-
-hidden_weights_1 = tf.Variable(tf.truncated_normal((INPUT_NODES, HIDDEN_NODES[0]), stddev=1. / np.sqrt(INPUT_NODES)))
-hidden_weights_2 = tf.Variable(
-    tf.truncated_normal((HIDDEN_NODES[0], HIDDEN_NODES[1]), stddev=1. / np.sqrt(HIDDEN_NODES[0])))
-hidden_weights_3 = tf.Variable(
-    tf.truncated_normal((HIDDEN_NODES[1], HIDDEN_NODES[2]), stddev=1. / np.sqrt(HIDDEN_NODES[1])))
-output_weights = tf.Variable(tf.truncated_normal((HIDDEN_NODES[-1], OUTPUT_NODES), stddev=1. / np.sqrt(OUTPUT_NODES)))
-
-hidden_layer_1 = tf.nn.relu(
-    tf.matmul(input_placeholder, hidden_weights_1) + tf.Variable(tf.constant(0.01, shape=(HIDDEN_NODES[0],))))
-hidden_layer_2 = tf.nn.relu(
-    tf.matmul(hidden_layer_1, hidden_weights_2) + tf.Variable(tf.constant(0.01, shape=(HIDDEN_NODES[1],))))
-hidden_layer_3 = tf.nn.relu(
-    tf.matmul(hidden_layer_2, hidden_weights_3) + tf.Variable(tf.constant(0.01, shape=(HIDDEN_NODES[2],))))
-output_layer = tf.nn.softmax(
-    tf.matmul(hidden_layer_3, output_weights) + tf.Variable(tf.constant(0.01, shape=(OUTPUT_NODES,))))
+input_layer, output_layer, variables = create_network(game_spec.board_squares(), HIDDEN_NODES,
+                                                      output_nodes=game_spec.outputs())
+actual_move_placeholder = tf.placeholder("float", (None, game_spec.outputs()))
 
 error = tf.reduce_sum(tf.square(actual_move_placeholder - output_layer))
 train_step = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(error)
 
-sess = tf.Session()
-sess.run(tf.initialize_all_variables())
+with tf.Session() as session:
+    session.run(tf.initialize_all_variables())
 
-episode_number = 1
+    if os.path.isfile(NETWORK_FILE_PATH):
+        print("loading existing network")
+        load_network(session, variables, NETWORK_FILE_PATH)
 
-positions_train, positions_test = load_games()
+    episode_number = 1
 
-test_error = sess.run(error, feed_dict={input_placeholder: [x[0] for x in positions_test]})
+    positions_train, positions_test = load_games()
 
-while True:
-    np.random.shuffle(positions_train)
-    train_error = 0
+    test_error = session.run(error, feed_dict={input_layer: [x[0] for x in positions_test],
+                                               actual_move_placeholder: [[x[1]] for x in positions_test]})
 
-    for start_index in range(0, positions_train.shape[0] - BATCH_SIZE + 1, BATCH_SIZE):
-        mini_batch = positions_train[start_index:start_index + BATCH_SIZE]
+    while True:
+        np.random.shuffle(positions_train)
+        train_error = 0
 
-        error, _ = sess.run(error, train_step, feed_dict={input_placeholder: [x[0] for x in mini_batch],
-                                                          actual_move_placeholder: [x[1] for x in mini_batch]})
-        train_error += error
+        for start_index in range(0, positions_train.shape[0] - BATCH_SIZE + 1, BATCH_SIZE):
+            mini_batch = positions_train[start_index:start_index + BATCH_SIZE]
 
-    new_test_error = sess.run(error, feed_dict={input_placeholder: [x[0] for x in positions_test]})
+            error, _ = session.run([error, train_step], feed_dict={input_layer: [x[0] for x in mini_batch],
+                                                                   actual_move_placeholder: [[x[1]] for x in
+                                                                                             mini_batch]})
+            train_error += error
 
-    print("episode: %s train_error: %s test_error: %s" % (episode_number, train_error, test_error))
+        new_test_error = session.run(error, feed_dict={input_layer: [x[0] for x in positions_test],
+                                                       actual_move_placeholder: [[x[1]] for x in positions_test]})
 
-    if new_test_error > test_error:
-        print("train error went up, stopping training")
+        print("episode: %s train_error: %s test_error: %s" % (episode_number, train_error, test_error))
 
-    test_error = new_test_error
-    episode_number += 1
+        if new_test_error > test_error:
+            print("train error went up, stopping training")
+
+        test_error = new_test_error
+        episode_number += 1
+
+    save_network(session, variables, NETWORK_FILE_PATH)

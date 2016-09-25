@@ -44,7 +44,7 @@ class BaseGameSpec(object):
         board_x = self.board_dimensions()[0]
         return move_index / board_x, move_index % board_x
 
-    def play_game(self, plus_player_func, minus_player_func, log=False):
+    def play_game(self, plus_player_func, minus_player_func, log=False, board_state=None):
         """Run a single game of until the end, using the provided function args to determine the moves for each
         player.
 
@@ -54,11 +54,12 @@ class BaseGameSpec(object):
             minus_player_func ((board_state(3 by 3 tuple of int), side(int)) -> move((int, int))): Function that takes the
                 current board_state and side this player is playing, and returns the move the player wants to play.
             log (bool): If True progress is logged to console, defaults to False
+            board_state: Optionally have the game start from this position, rather than from a new board
 
         Returns:
             int: 1 if the plus_player_func won, -1 if the minus_player_func won and 0 for a draw
         """
-        board_state = self.new_board()
+        board_state = board_state or self.new_board()
         player_turn = 1
 
         while True:
