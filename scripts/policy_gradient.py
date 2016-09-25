@@ -60,7 +60,7 @@ def make_move(board_state, side):
     actual_moves.append(move)
 
     move_index = move.argmax()
-    return move_index / 3, move_index % 3
+    return game_spec.flat_move_to_tuple(move_index)
 
 
 while True:

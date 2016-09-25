@@ -30,6 +30,20 @@ class BaseGameSpec(object):
     def board_squares(self):
         return reduce(operator.mul, self.board_dimensions(), 1)
 
+    def outputs(self):
+        """The number of moves that could be made in this kind of game, weather or not they are legal. For most games
+        this will be every single square on the board, but for connect 4 this is different. If we wanted to do chess in
+        the future this method may need to get a bit more complicated.
+
+        Returns:
+            int
+        """
+        return self.board_squares()
+
+    def flat_move_to_tuple(self, move_index):
+        board_x = self.board_dimensions()[0]
+        return move_index / board_x, move_index % board_x
+
     def play_game(self, plus_player_func, minus_player_func, log=False):
         """Run a single game of until the end, using the provided function args to determine the moves for each
         player.

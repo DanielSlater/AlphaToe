@@ -114,13 +114,13 @@ def has_winner(board_state, winning_length=4):
     # check diagonals
     diagonals_start = -(board_width - winning_length)
     diagonals_end = (board_width - winning_length)
-    for d in range(diagonals_start, diagonals_end):
+    for d in range(diagonals_start, diagonals_end+1):
         winner = _has_winning_line(
             (board_state[i][i + d] for i in range(max(-d, 0), min(board_width, board_height - d))),
             winning_length)
         if winner != 0:
             return winner
-    for d in range(diagonals_start, diagonals_end):
+    for d in range(diagonals_start, diagonals_end+1):
         winner = _has_winning_line(
             (board_state[i][board_height - i - d - 1] for i in range(max(-d, 0), min(board_width, board_height - d))),
             winning_length)
@@ -205,18 +205,20 @@ class ConnectGameSpecX(BaseGameSpec):
         self.available_moves = available_moves
         self.apply_move = apply_move
 
-        self.new_board.__doc__ = _new_board.__doc__
-        self.has_winner.__doc__ = has_winner.__doc__
-
     def new_board(self):
         return _new_board(self._board_width, self._board_height)
 
     def has_winner(self, board_sate):
-        return has_winner(self._board_size, self._winning_length)
+        return has_winner(board_sate, self._winning_length)
 
     def board_dimensions(self):
         return self._board_width, self._board_height
 
+    def flat_move_to_tuple(self, move_index):
+        return move_index
+
+    def outputs(self):
+        return self._board_width
 
 if __name__ == '__main__':
     # example of playing a game
