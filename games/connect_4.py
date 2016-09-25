@@ -51,7 +51,7 @@ def apply_move(board_state, move_x, side):
             if move_x == i:
                 temp = list(board_state[i])
                 temp[move_y] = side
-                yield temp
+                yield tuple(temp)
             else:
                 yield board_state[i]
 
