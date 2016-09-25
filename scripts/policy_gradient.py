@@ -7,7 +7,7 @@ import tensorflow as tf
 from games.tic_tac_toe_x import TicTacToeXGameSpec
 from network_helpers import create_network, load_network, get_stochastic_network_move, save_network
 
-HIDDEN_NODES = (100, 100, 100)  # number of hidden layer neurons
+HIDDEN_NODES = (100, 80, 60, 40)
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
 PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
