@@ -110,13 +110,13 @@ def has_winner(board_state, winning_length):
     # check diagonals
     diagonals_start = -(board_width - winning_length)
     diagonals_end = (board_width - winning_length)
-    for d in range(diagonals_start, diagonals_end):
+    for d in range(diagonals_start, diagonals_end+1):
         winner = _has_winning_line(
             (board_state[i][i + d] for i in range(max(-d, 0), min(board_width, board_height - d))),
             winning_length)
         if winner != 0:
             return winner
-    for d in range(diagonals_start, diagonals_end):
+    for d in range(diagonals_start, diagonals_end+1):
         winner = _has_winning_line(
             (board_state[i][board_height - i - d - 1] for i in range(max(-d, 0), min(board_width, board_height - d))),
             winning_length)
