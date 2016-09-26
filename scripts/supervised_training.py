@@ -17,10 +17,8 @@ def load_games():
 
 
 HIDDEN_NODES = (100, 80, 60, 40)  # number of hidden layer neurons
-INPUT_NODES = 3 * 3  # board size
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
-PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
 NETWORK_FILE_PATH = 'current_network.p'
 game_spec = TicTacToeXGameSpec(5, 4)
 

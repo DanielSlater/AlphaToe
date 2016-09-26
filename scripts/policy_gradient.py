@@ -1,5 +1,6 @@
 import collections
 import os
+import random
 
 import numpy as np
 import tensorflow as tf
@@ -17,7 +18,6 @@ NUMBER_OF_GAMES_TO_RUN = 100000
 # to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
 game_spec = TicTacToeXGameSpec(5, 4)
 
-INPUT_NODES = game_spec.board_squares()
 OUTPUT_NODES = game_spec.outputs()
 
 reward_placeholder = tf.placeholder("float", shape=(None,))
@@ -48,7 +48,11 @@ with tf.Session() as session:
 
 
     for episode_number in range(1, NUMBER_OF_GAMES_TO_RUN):
-        reward = game_spec.play_game(make_training_move, game_spec.get_random_player_func())
+        # randomize if going first or second
+        if bool(random.getrandbits(1)):
+            reward = game_spec.play_game(make_training_move, game_spec.get_random_player_func())
+        else:
+            reward = game_spec.play_game(game_spec.get_random_player_func(), make_training_move)
 
         results.append(reward)
 

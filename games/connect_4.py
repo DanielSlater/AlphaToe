@@ -197,7 +197,7 @@ def random_player(board_state, _):
     return random.choice(moves)
 
 
-class ConnectGameSpecX(BaseGameSpec):
+class Connect4GameSpec(BaseGameSpec):
     def __init__(self, board_width, board_height, winning_length):
         self._board_height = board_height
         self._board_width = board_width

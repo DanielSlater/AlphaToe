@@ -1,4 +1,3 @@
-import collections
 import os
 import random
 
@@ -15,7 +14,6 @@ BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
 REINFORCEMENT_NETWORK_PATH = 'current_network.p'
 VALUE_NETWORK_PATH = 'value_netowrk.p'
-NUMBER_OF_GAMES_TO_RUN = 100000
 TRAIN_SAMPLES = 10000
 TEST_SAMPLES = 10000
 

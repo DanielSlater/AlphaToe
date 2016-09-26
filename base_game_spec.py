@@ -5,15 +5,21 @@ from functools import reduce
 
 class BaseGameSpec(object):
     def __init__(self):
+        """Abstract base class for the specification for running/training on a game.
+
+        Examples:
+            spec = TicTacToeGameSpec()
+            result = spec.play_game(func_a, func_b)
+        """
         raise NotImplementedError('This is an abstract base class')
 
     def new_board(self):
         raise NotImplementedError()
 
-    def apply_move(self):
+    def apply_move(self, board_state, move, side):
         raise NotImplementedError()
 
-    def available_moves(self):
+    def available_moves(self, board_state):
         raise NotImplementedError()
 
     def has_winner(self, board_sate):
@@ -28,6 +34,11 @@ class BaseGameSpec(object):
         raise NotImplementedError()
 
     def board_squares(self):
+        """The number of squares on the board. This can be used for the number of input nodes to a network.
+
+        Returns:
+
+        """
         return reduce(operator.mul, self.board_dimensions(), 1)
 
     def outputs(self):
