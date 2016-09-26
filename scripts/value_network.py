@@ -13,13 +13,16 @@ HIDDEN_NODES_VALUE = (120, 100, 80, 60, 40)
 HIDDEN_NODES_REINFORCEMENT = (100, 80, 60, 40)
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
-PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
 REINFORCEMENT_NETWORK_PATH = 'current_network.p'
 VALUE_NETWORK_PATH = 'value_netowrk.p'
 NUMBER_OF_GAMES_TO_RUN = 100000
-TRAIN_SAMPLES = 400
-TEST_SAMPLES = 400
-NUMBER_RANDOM_RANGE = (1, 20)
+TRAIN_SAMPLES = 10000
+TEST_SAMPLES = 10000
+
+# to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
+game_spec = TicTacToeXGameSpec(5, 4)
+
+NUMBER_RANDOM_RANGE = (1, game_spec.board_squares() * 0.8)
 
 
 # it would be good to have real board positions, but failing that just generate random ones
@@ -39,9 +42,6 @@ def generate_random_board_position():
         return board_state
 
 
-# to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
-game_spec = TicTacToeXGameSpec(5, 4)
-
 reinforcement_input_layer, reinforcement_output_layer, reinforcement_variables = create_network(
     game_spec.board_squares(),
     HIDDEN_NODES_REINFORCEMENT,
@@ -50,8 +50,8 @@ reinforcement_input_layer, reinforcement_output_layer, reinforcement_variables =
 value_input_layer, value_output_layer, value_variables = create_network(game_spec.board_squares(), HIDDEN_NODES_VALUE,
                                                                         output_nodes=1, output_softmax=False)
 
-target_palceholder = tf.placeholder("float", (None, 1))
-error = tf.reduce_sum(tf.square(target_palceholder - value_output_layer))
+target_placeholder = tf.placeholder("float", (None, 1))
+error = tf.reduce_sum(tf.square(target_placeholder - value_output_layer))
 
 train_step = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(error)
 
@@ -63,8 +63,6 @@ with tf.Session() as session:
     if os.path.isfile(VALUE_NETWORK_PATH):
         print("loading previous version of value network")
         load_network(session, value_variables, VALUE_NETWORK_PATH)
-
-    results = collections.deque(maxlen=PRINT_RESULTS_EVERY_X)
 
 
     def make_move(board_state, side):
@@ -96,7 +94,7 @@ with tf.Session() as session:
     board_states_training = list(board_states_training.iteritems())
 
     test_error = session.run(error, feed_dict={value_input_layer: [x[0] for x in board_states_test],
-                                               target_palceholder: [[x[1]] for x in board_states_test]})
+                                               target_placeholder: [[x[1]] for x in board_states_test]})
 
     while True:
         np.random.shuffle(board_states_training)
@@ -105,17 +103,19 @@ with tf.Session() as session:
         for start_index in range(0, len(board_states_training) - BATCH_SIZE + 1, BATCH_SIZE):
             mini_batch = board_states_training[start_index:start_index + BATCH_SIZE]
 
-            error, _ = session.run([error, train_step], feed_dict={value_input_layer: [x[0] for x in mini_batch],
-                                                                   target_palceholder: [[x[1]] for x in mini_batch]})
-            train_error += error
+            batch_error, _ = session.run([error, train_step],
+                                         feed_dict={value_input_layer: [x[0] for x in mini_batch],
+                                                    target_placeholder: [[x[1]] for x in mini_batch]})
+            train_error += batch_error
 
         new_test_error = session.run(error, feed_dict={value_input_layer: [x[0] for x in board_states_test],
-                                                       target_palceholder: [[x[1]] for x in board_states_test]})
+                                                       target_placeholder: [[x[1]] for x in board_states_test]})
 
         print("episode: %s train_error: %s test_error: %s" % (episode_number, train_error, test_error))
 
         if new_test_error > test_error:
             print("train error went up, stopping training")
+            break
 
         test_error = new_test_error
         episode_number += 1

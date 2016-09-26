@@ -52,10 +52,10 @@ with tf.Session() as session:
         for start_index in range(0, positions_train.shape[0] - BATCH_SIZE + 1, BATCH_SIZE):
             mini_batch = positions_train[start_index:start_index + BATCH_SIZE]
 
-            error, _ = session.run([error, train_step], feed_dict={input_layer: [x[0] for x in mini_batch],
-                                                                   actual_move_placeholder: [[x[1]] for x in
-                                                                                             mini_batch]})
-            train_error += error
+            batch_error, _ = session.run([error, train_step],
+                                         feed_dict={input_layer: [x[0] for x in mini_batch],
+                                                    actual_move_placeholder: [[x[1]] for x in mini_batch]})
+            train_error += batch_error
 
         new_test_error = session.run(error, feed_dict={input_layer: [x[0] for x in positions_test],
                                                        actual_move_placeholder: [[x[1]] for x in positions_test]})
@@ -64,6 +64,7 @@ with tf.Session() as session:
 
         if new_test_error > test_error:
             print("train error went up, stopping training")
+            break
 
         test_error = new_test_error
         episode_number += 1
