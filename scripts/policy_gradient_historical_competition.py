@@ -6,7 +6,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from games.tic_tac_toe_x import TicTacToeXGameSpec
+from games.tic_tac_toe import TicTacToeGameSpec
 from network_helpers import create_network, load_network, get_stochastic_network_move, \
     save_network
 
@@ -19,7 +19,7 @@ BASE_HISTORICAL_NETWORK_PATH = 'historical_network_'
 HIDDEN_NODES = (100, 80, 60, 40)
 PRINT_RESULTS_EVERY_X = 500
 LEARN_RATE = 1e-4
-game_spec = TicTacToeXGameSpec(5, 4)
+game_spec = TicTacToeGameSpec()
 
 input_layer, output_layer, variables = create_network(game_spec.board_squares(), HIDDEN_NODES,
                                                       output_nodes=game_spec.outputs())
@@ -64,8 +64,11 @@ with tf.Session() as session:
         print("could not find previous weights so initialising randomly")
 
     for i in range(NUMBER_OF_HISTORICAL_COPIES_TO_KEEP):
-        if os.path.isfile(STARTING_NETWORK_WEIGHTS + str(i) + '.p'):
-            load_network(session, variables, BASE_HISTORICAL_NETWORK_PATH + str(i) + '.p')
+        if os.path.isfile(BASE_HISTORICAL_NETWORK_PATH + str(i) + '.p'):
+            load_network(session, historical_variables[i], BASE_HISTORICAL_NETWORK_PATH + str(i) + '.p')
+        elif os.path.isfile(STARTING_NETWORK_WEIGHTS):
+            # if we can't load a historical file use the current network weights
+            load_network(session, historical_variables[i], STARTING_NETWORK_WEIGHTS)
 
     for episode_number in range(1, NUMBER_OF_GAMES_TO_PLAY):
         opponent_index = random.randint(0, NUMBER_OF_HISTORICAL_COPIES_TO_KEEP-1)
@@ -75,16 +78,14 @@ with tf.Session() as session:
         if bool(random.getrandbits(1)):
             reward = game_spec.play_game(make_training_move, make_move_historical_for_index)
         else:
-            reward = game_spec.play_game(make_move_historical_for_index, make_training_move)
+            reward = -game_spec.play_game(make_move_historical_for_index, make_training_move)
 
         results.append(reward)
-        if len(results) > PRINT_RESULTS_EVERY_X:
-            results.popleft()
-
-        last_game_length = len(mini_batch_board_states) - len(mini_batch_rewards)
 
         # we scale here so winning quickly is better winning slowly and loosing slowly better than loosing quick
         reward /= float(last_game_length)
+
+        last_game_length = len(mini_batch_board_states) - len(mini_batch_rewards)
 
         mini_batch_rewards += ([reward] * last_game_length)
 
@@ -111,6 +112,9 @@ with tf.Session() as session:
             save_network(session, variables, BASE_HISTORICAL_NETWORK_PATH + str(current_historical_index) + '.p')
             load_network(session, historical_networks[current_historical_index][2],
                          BASE_HISTORICAL_NETWORK_PATH + str(current_historical_index) + '.p')
+
+            # also save to the main network file
+            save_network(session, variables, STARTING_NETWORK_WEIGHTS)
 
             current_historical_index += 1
             current_historical_index %= NUMBER_OF_HISTORICAL_COPIES_TO_KEEP

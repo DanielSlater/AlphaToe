@@ -3,7 +3,7 @@ import os
 import numpy as np
 import tensorflow as tf
 
-from games.tic_tac_toe_x import TicTacToeXGameSpec
+from games.tic_tac_toe import TicTacToeGameSpec
 from network_helpers import create_network, save_network, load_network
 
 
@@ -20,7 +20,7 @@ HIDDEN_NODES = (100, 80, 60, 40)  # number of hidden layer neurons
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
 NETWORK_FILE_PATH = 'current_network.p'
-game_spec = TicTacToeXGameSpec(5, 4)
+game_spec = TicTacToeGameSpec()
 
 input_layer, output_layer, variables = create_network(game_spec.board_squares(), HIDDEN_NODES,
                                                       output_nodes=game_spec.outputs())

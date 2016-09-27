@@ -4,7 +4,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from games.tic_tac_toe_x import TicTacToeXGameSpec
+from games.tic_tac_toe import TicTacToeGameSpec
 from network_helpers import create_network, load_network, save_network, \
     get_deterministic_network_move
 
@@ -18,7 +18,7 @@ TRAIN_SAMPLES = 10000
 TEST_SAMPLES = 10000
 
 # to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
-game_spec = TicTacToeXGameSpec(5, 4)
+game_spec = TicTacToeGameSpec()
 
 NUMBER_RANDOM_RANGE = (1, game_spec.board_squares() * 0.8)
 

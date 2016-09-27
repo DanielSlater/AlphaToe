@@ -5,7 +5,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from games.tic_tac_toe_x import TicTacToeXGameSpec
+from games.tic_tac_toe import TicTacToeGameSpec
 from network_helpers import create_network, load_network, get_stochastic_network_move, save_network
 
 HIDDEN_NODES = (100, 80, 60, 40)
@@ -16,7 +16,7 @@ NETWORK_FILE_PATH = 'current_network.p'
 NUMBER_OF_GAMES_TO_RUN = 100000
 
 # to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
-game_spec = TicTacToeXGameSpec(5, 4)
+game_spec = TicTacToeGameSpec()
 
 OUTPUT_NODES = game_spec.outputs()
 
@@ -52,14 +52,14 @@ with tf.Session() as session:
         if bool(random.getrandbits(1)):
             reward = game_spec.play_game(make_training_move, game_spec.get_random_player_func())
         else:
-            reward = game_spec.play_game(game_spec.get_random_player_func(), make_training_move)
+            reward = -game_spec.play_game(game_spec.get_random_player_func(), make_training_move)
 
         results.append(reward)
 
-        last_game_length = len(mini_batch_board_states) - len(mini_batch_rewards)
-
         # we scale here so winning quickly is better winning slowly and loosing slowly better than loosing quick
         reward /= float(last_game_length)
+
+        last_game_length = len(mini_batch_board_states) - len(mini_batch_rewards)
 
         mini_batch_rewards += ([reward] * last_game_length)
 
@@ -78,5 +78,6 @@ with tf.Session() as session:
 
         if episode_number % PRINT_RESULTS_EVERY_X == 0:
             print("episode: %s win_rate: %s" % (episode_number, 0.5 + sum(results) / (PRINT_RESULTS_EVERY_X * 2.)))
+            save_network(session, variables, NETWORK_FILE_PATH)
 
     save_network(session, variables, NETWORK_FILE_PATH)
