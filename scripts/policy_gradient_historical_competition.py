@@ -65,10 +65,10 @@ with tf.Session() as session:
 
     for i in range(NUMBER_OF_HISTORICAL_COPIES_TO_KEEP):
         if os.path.isfile(BASE_HISTORICAL_NETWORK_PATH + str(i) + '.p'):
-            load_network(session, historical_variables[i], BASE_HISTORICAL_NETWORK_PATH + str(i) + '.p')
+            load_network(session, historical_networks[i][2], BASE_HISTORICAL_NETWORK_PATH + str(i) + '.p')
         elif os.path.isfile(STARTING_NETWORK_WEIGHTS):
             # if we can't load a historical file use the current network weights
-            load_network(session, historical_variables[i], STARTING_NETWORK_WEIGHTS)
+            load_network(session, historical_networks[i][2], STARTING_NETWORK_WEIGHTS)
 
     for episode_number in range(1, NUMBER_OF_GAMES_TO_PLAY):
         opponent_index = random.randint(0, NUMBER_OF_HISTORICAL_COPIES_TO_KEEP-1)
