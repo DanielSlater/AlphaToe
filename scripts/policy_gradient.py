@@ -56,10 +56,10 @@ with tf.Session() as session:
 
         results.append(reward)
 
+        last_game_length = len(mini_batch_board_states) - len(mini_batch_rewards)
+
         # we scale here so winning quickly is better winning slowly and loosing slowly better than loosing quick
         reward /= float(last_game_length)
-
-        last_game_length = len(mini_batch_board_states) - len(mini_batch_rewards)
 
         mini_batch_rewards += ([reward] * last_game_length)
 
