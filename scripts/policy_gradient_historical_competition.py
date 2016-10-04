@@ -1,3 +1,10 @@
+"""
+This is the same as the policy_gradient.py network except that instead of playing against a random opponent. It plays
+against previous versions of itself. It is first created with the weights from the "current_network.p" file, if no file
+is found there random weights are used. It then creates a series of copies of itself and plays against them.
+After "SAVE_HISTORICAL_NETWORK_EVERY" games, it saves it's current weights into the weights of one of the historical
+networks. Over time the main network and the historical networks should improve.
+"""
 import collections
 import functools
 import os

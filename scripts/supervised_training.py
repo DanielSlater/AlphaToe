@@ -1,3 +1,7 @@
+"""
+Alpha Go was first trained in a supervised manor using a database of games played by humans. I don't have a database of
+tic-tac-toe games, but if I did this is how I would use them to train the network...
+"""
 import os
 
 import numpy as np

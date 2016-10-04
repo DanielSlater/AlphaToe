@@ -1,3 +1,20 @@
+"""
+Builds and trains a neural network that uses policy gradients to learn to play Tic-Tac-Toe.
+
+The input to the network is a vector with a number for each space on the board. If the space has one of the networks
+pieces then the input vector has the value 1. -1 for the opponents space and 0 for no piece.
+
+The output of the network is a also of the size of the board with each number learning the probability that a move in
+that space is the best move.
+
+The network plays successive games randomly alternating between going first and second against an opponent that makes
+moves by randomly selecting a free space. The neural network does NOT initally have any way of knowing what is or is not
+a valid move, so initally it must learn the rules of the game.
+
+I have trained this version with success at 3x3 tic tac toe until it has a success rate in the region of 75% this maybe
+as good as it can do, because 3x3 tic-tac-toe is a theoretical draw, so the random opponent will often get lucky and
+force a draw.
+"""
 import collections
 import os
 import random
@@ -12,19 +29,17 @@ HIDDEN_NODES = (100, 80, 60, 40)
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
 PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
-NETWORK_FILE_PATH = 'current_network.p'
+NETWORK_FILE_PATH = 'current_network.p'  # path to save the network to
 NUMBER_OF_GAMES_TO_RUN = 100000
 
 # to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
 game_spec = TicTacToeGameSpec()
 
-OUTPUT_NODES = game_spec.outputs()
-
 reward_placeholder = tf.placeholder("float", shape=(None,))
-actual_move_placeholder = tf.placeholder("float", shape=(None, OUTPUT_NODES))
+actual_move_placeholder = tf.placeholder("float", shape=(None, game_spec.outputs()))
 
 input_layer, output_layer, variables = create_network(game_spec.board_squares(), HIDDEN_NODES,
-                                                      output_nodes=OUTPUT_NODES)
+                                                      output_nodes=game_spec.outputs())
 
 policy_gradient = tf.reduce_sum(tf.reshape(reward_placeholder, (-1, 1)) * actual_move_placeholder * output_layer)
 train_step = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(-policy_gradient)

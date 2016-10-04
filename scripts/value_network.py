@@ -1,3 +1,10 @@
+"""
+After using reinforcement learning to train a network, e.g. policy_gradient.py, to play a game well. We then want to
+learn to estimate weather that network would win, lose or draw from a given position.
+
+Alpha Go used a database of real positions to get it's predictions from, we don't have that for tic-tac-toe so instead
+we generate some random game positions and train off of the results we get playing from those.
+"""
 import os
 import random
 
