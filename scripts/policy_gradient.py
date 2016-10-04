@@ -8,8 +8,8 @@ The output of the network is a also of the size of the board with each number le
 that space is the best move.
 
 The network plays successive games randomly alternating between going first and second against an opponent that makes
-moves by randomly selecting a free space. The neural network does NOT initally have any way of knowing what is or is not
-a valid move, so initally it must learn the rules of the game.
+moves by randomly selecting a free space. The neural network does NOT initially have any way of knowing what is or is not
+a valid move, so initially it must learn the rules of the game.
 
 I have trained this version with success at 3x3 tic tac toe until it has a success rate in the region of 75% this maybe
 as good as it can do, because 3x3 tic-tac-toe is a theoretical draw, so the random opponent will often get lucky and
