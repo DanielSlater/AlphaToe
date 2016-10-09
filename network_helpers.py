@@ -69,7 +69,7 @@ def save_network(session, tf_variables, file_path):
         file_path (str): path of the file we want to save to.
     """
     variable_values = session.run(tf_variables)
-    with open(file_path, mode='w') as f:
+    with open(file_path, mode='wb') as f:
         pickle.dump(variable_values, f)
 
 
@@ -82,7 +82,7 @@ def load_network(session, tf_variables, file_path):
             order matters, in must be the exact same order as was used to save and all of the same shape.
         file_path (str): path of the file we want to load from.
     """
-    with open(file_path, mode='r') as f:
+    with open(file_path, mode='rb') as f:
         variable_values = pickle.load(f)
     for value, tf_variable in zip(variable_values, tf_variables):
         session.run(tf_variable.assign(value))
