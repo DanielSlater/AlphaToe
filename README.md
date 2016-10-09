@@ -5,3 +5,12 @@ These are the code examples to with my talk, the slide for which are in AlphaToe
 
 As well as the slides, the file script/policy_gradient.py is a good starting point for the project. All networks are 
 built using TensorFlow.
+
+## SetUp
+
+To get running start by creating a virtual env/conda env with tensorFlow installed. Current instructions for this are 
+at: https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#anaconda-installation
+
+Then run the file file script/policy_gradient.py with this directory as the root.
+
+This has been tested with python 2.7 and 3.5
