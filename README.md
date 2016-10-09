@@ -11,6 +11,8 @@ built using TensorFlow.
 To get running start by creating a virtual env/conda env with tensorFlow installed. Current instructions for this are 
 at: https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#anaconda-installation
 
+I've also found this useful: https://anaconda.org/jjhelmus/tensorflow
+
 Then run the file file script/policy_gradient.py with this directory as the root.
 
 This has been tested with python 2.7 and 3.5
