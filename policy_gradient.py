@@ -23,7 +23,7 @@ import numpy as np
 import tensorflow as tf
 
 from common.network_helpers import create_network, load_network, get_stochastic_network_move, save_network
-from games.tic_tac_toe_x import TicTacToeXGameSpec
+from games.tic_tac_toe import TicTacToeGameSpec
 
 HIDDEN_NODES = (200, 160, 120, 80)
 BATCH_SIZE = 100  # every how many games to do a parameter update?
@@ -32,8 +32,9 @@ PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
 NETWORK_FILE_PATH = 'current_network.p'  # path to save the network to
 NUMBER_OF_GAMES_TO_RUN = 100000
 
-# to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
-game_spec = TicTacToeXGameSpec(5, 4) #TicTacToeGameSpec()
+# to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec, to get these to run
+# well may require tuning the hyper parameters a bit
+game_spec = TicTacToeGameSpec()
 
 reward_placeholder = tf.placeholder("float", shape=(None,))
 actual_move_placeholder = tf.placeholder("float", shape=(None, game_spec.outputs()))
