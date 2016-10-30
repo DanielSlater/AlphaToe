@@ -1,8 +1,10 @@
 import os
 from unittest import TestCase
-import tensorflow as tf
+
 import numpy as np
-from network_helpers import create_network, save_network, load_network
+import tensorflow as tf
+
+from common.network_helpers import create_network, save_network, load_network
 
 
 class TestNetworkHelpers(TestCase):
@@ -12,6 +14,22 @@ class TestNetworkHelpers(TestCase):
         input_layer, output_layer, variables = create_network(input_nodes, hidden_nodes)
         self.assertSequenceEqual(input_layer.get_shape().as_list(), [None, input_nodes])
         self.assertSequenceEqual(output_layer.get_shape().as_list(), [None, input_nodes])
+        self.assertEqual(len(variables), (len(hidden_nodes) + 1) * 2)
+
+    def test_create_network_with_2d_input(self):
+        input_nodes = (5, 5)
+        hidden_nodes = (50, 40, 30)
+        input_layer, output_layer, variables = create_network(input_nodes, hidden_nodes)
+        self.assertSequenceEqual(input_layer.get_shape().as_list(), [None, input_nodes[0], input_nodes[1]])
+        self.assertSequenceEqual(output_layer.get_shape().as_list(), [None, input_nodes[0] * input_nodes[1]])
+        self.assertEqual(len(variables), (len(hidden_nodes) + 1) * 2)
+
+    def test_create_convolutional_network(self):
+        input_nodes = (5, 5)
+        hidden_nodes = ((3, 3), 40, 30)
+        input_layer, output_layer, variables = create_network(input_nodes, hidden_nodes)
+        self.assertSequenceEqual(input_layer.get_shape().as_list(), [None, input_nodes[0], input_nodes[1]])
+        self.assertSequenceEqual(output_layer.get_shape().as_list(), [None, input_nodes[0] * input_nodes[1]])
         self.assertEqual(len(variables), (len(hidden_nodes) + 1) * 2)
 
     def test_save_and_load_network(self):

@@ -13,6 +13,6 @@ at: https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html#anaconda
 
 I've also found this useful: https://anaconda.org/jjhelmus/tensorflow
 
-Then run the file file script/policy_gradient.py with this directory as the root.
+Then run the file file policy_gradient.py
 
 This has been tested with python 2.7 and 3.5

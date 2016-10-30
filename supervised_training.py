@@ -7,8 +7,8 @@ import os
 import numpy as np
 import tensorflow as tf
 
+from common.network_helpers import create_network, save_network, load_network
 from games.tic_tac_toe import TicTacToeGameSpec
-from network_helpers import create_network, save_network, load_network
 
 
 def load_games():

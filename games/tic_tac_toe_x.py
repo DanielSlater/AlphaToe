@@ -13,10 +13,10 @@ The board is represented by a board_size x board_size tuple of ints. A 0 means n
 player one has played there, -1 means the seconds player has played there. The apply_move method can be used to return a
 copy of a given state with a given move applied. This can be useful for doing min-max or monte carlo sampling.
 """
-import random
 import itertools
+import random
 
-from base_game_spec import BaseGameSpec
+from common.base_game_spec import BaseGameSpec
 
 
 def _new_board(board_size):
@@ -195,6 +195,19 @@ def random_player(board_state, _):
 
 class TicTacToeXGameSpec(BaseGameSpec):
     def __init__(self, board_size, winning_length):
+        """
+
+        Args:
+            board_size (int): The length of one side of the board, so the bard will have board_size*board_size total
+                squares
+            winning_length (int): The length in a row needed to win the game. Should be less than or equal to board_size
+        """
+        if not isinstance(board_size, int):
+            raise TypeError("board_size must be an int")
+        if not isinstance(winning_length, int):
+            raise TypeError("winning_length must be an int")
+        if winning_length > board_size:
+            raise ValueError("winning_length must be less than or equal to board_size")
         self._winning_length = winning_length
         self._board_size = board_size
         self.available_moves = available_moves

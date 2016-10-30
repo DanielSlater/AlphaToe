@@ -11,9 +11,9 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from games.tic_tac_toe import TicTacToeGameSpec
-from network_helpers import create_network, load_network, save_network, \
+from common.network_helpers import create_network, load_network, save_network, \
     get_deterministic_network_move
+from games.tic_tac_toe import TicTacToeGameSpec
 
 HIDDEN_NODES_VALUE = (120, 100, 80, 60, 40)
 HIDDEN_NODES_REINFORCEMENT = (100, 80, 60, 40)

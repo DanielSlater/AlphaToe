@@ -22,18 +22,18 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from games.tic_tac_toe import TicTacToeGameSpec
-from network_helpers import create_network, load_network, get_stochastic_network_move, save_network
+from common.network_helpers import create_network, load_network, get_stochastic_network_move, save_network
+from games.tic_tac_toe_x import TicTacToeXGameSpec
 
-HIDDEN_NODES = (100, 80, 60, 40)
+HIDDEN_NODES = (200, 160, 120, 80)
 BATCH_SIZE = 100  # every how many games to do a parameter update?
-LEARN_RATE = 1e-4
+LEARN_RATE = 1e-5
 PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
 NETWORK_FILE_PATH = 'current_network.p'  # path to save the network to
 NUMBER_OF_GAMES_TO_RUN = 100000
 
 # to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec
-game_spec = TicTacToeGameSpec()
+game_spec = TicTacToeXGameSpec(5, 4) #TicTacToeGameSpec()
 
 reward_placeholder = tf.placeholder("float", shape=(None,))
 actual_move_placeholder = tf.placeholder("float", shape=(None, game_spec.outputs()))
@@ -42,7 +42,7 @@ input_layer, output_layer, variables = create_network(game_spec.board_squares(),
                                                       output_nodes=game_spec.outputs())
 
 policy_gradient = tf.reduce_sum(tf.reshape(reward_placeholder, (-1, 1)) * actual_move_placeholder * output_layer)
-train_step = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(-policy_gradient)
+train_step = tf.train.RMSPropOptimizer(LEARN_RATE).minimize(-tf.log(policy_gradient))
 
 with tf.Session() as session:
     session.run(tf.initialize_all_variables())

@@ -11,7 +11,7 @@ return a copy of a given state with a given move applied. This can be useful for
 
 import random
 
-from base_game_spec import BaseGameSpec
+from common.base_game_spec import BaseGameSpec
 
 
 def _new_board(board_width, board_height):

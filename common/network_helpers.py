@@ -1,7 +1,11 @@
 import operator
+from collections import namedtuple
+
 import tensorflow as tf
 import numpy as np
 import pickle
+
+from functools import reduce
 
 
 def create_network(input_nodes, hidden_nodes, output_nodes=None, output_softmax=True):
@@ -27,11 +31,10 @@ def create_network(input_nodes, hidden_nodes, output_nodes=None, output_softmax=
         if isinstance(input_nodes, tuple):
             input_layer = tf.placeholder("float", (None,) + input_nodes)
             flat_size = reduce(operator.mul, input_nodes, 1)
-            input_layer = tf.reshape(input_layer, (-1, flat_size))
+            current_layer = tf.reshape(input_layer, (-1, flat_size))
         else:
             input_layer = tf.placeholder("float", (None, input_nodes))
-
-        current_layer = input_layer
+            current_layer = input_layer
 
         for hidden_nodes in hidden_nodes:
             last_layer_nodes = int(current_layer.get_shape()[-1])
@@ -45,6 +48,9 @@ def create_network(input_nodes, hidden_nodes, output_nodes=None, output_softmax=
 
             current_layer = tf.nn.relu(
                 tf.matmul(current_layer, hidden_weights) + hidden_bias)
+
+        if isinstance(output_nodes, tuple):
+            output_nodes = reduce(operator.mul, input_nodes, 1)
 
         output_weights = tf.Variable(
             tf.truncated_normal((hidden_nodes, output_nodes), stddev=1. / np.sqrt(hidden_nodes)), name="output_weights")

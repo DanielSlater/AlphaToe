@@ -9,10 +9,10 @@ The board is represented by a 3 x 3 tuple of ints. A 0 means no player has playe
 played there, -1 means the seconds player has played there. The apply_move method can be used to return a copy of a
 given state with a given move applied. This can be useful for doing min-max or monte carlo sampling.
 """
-import random
 import itertools
+import random
 
-from base_game_spec import BaseGameSpec
+from common.base_game_spec import BaseGameSpec
 
 
 def _new_board():

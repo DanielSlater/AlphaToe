@@ -13,9 +13,9 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from games.tic_tac_toe import TicTacToeGameSpec
-from network_helpers import create_network, load_network, get_stochastic_network_move, \
+from common.network_helpers import create_network, load_network, get_stochastic_network_move, \
     save_network
+from games.tic_tac_toe import TicTacToeGameSpec
 
 NUMBER_OF_HISTORICAL_COPIES_TO_KEEP = 8
 NUMBER_OF_GAMES_TO_PLAY = 1000000
