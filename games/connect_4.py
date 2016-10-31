@@ -198,7 +198,7 @@ def random_player(board_state, _):
 
 
 class Connect4GameSpec(BaseGameSpec):
-    def __init__(self, board_width, board_height, winning_length):
+    def __init__(self, board_width=7, board_height=6, winning_length=4):
         self._board_height = board_height
         self._board_width = board_width
         self._winning_length = winning_length
@@ -208,8 +208,8 @@ class Connect4GameSpec(BaseGameSpec):
     def new_board(self):
         return _new_board(self._board_width, self._board_height)
 
-    def has_winner(self, board_sate):
-        return has_winner(board_sate, self._winning_length)
+    def has_winner(self, board_state):
+        return has_winner(board_state, self._winning_length)
 
     def board_dimensions(self):
         return self._board_width, self._board_height

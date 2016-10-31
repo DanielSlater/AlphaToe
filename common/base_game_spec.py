@@ -22,7 +22,7 @@ class BaseGameSpec(object):
     def available_moves(self, board_state):
         raise NotImplementedError()
 
-    def has_winner(self, board_sate):
+    def has_winner(self, board_state):
         raise NotImplementedError()
 
     def board_dimensions(self):
@@ -52,8 +52,21 @@ class BaseGameSpec(object):
         return self.board_squares()
 
     def flat_move_to_tuple(self, move_index):
+        """If board is 2d then we return a tuple for where we moved to.
+        e.g if the board is a 3x3 size and our move_index was 6 then
+        this method will return (2, 0)
+
+        Args:
+            move_index (int): The index of the square we moved to
+
+        Returns:
+            tuple or int: For where we moved in board coordinates
+        """
+        if len(self.board_dimensions()) == 1:
+            return move_index
+
         board_x = self.board_dimensions()[0]
-        return move_index / board_x, move_index % board_x
+        return int(move_index / board_x), move_index % board_x
 
     def play_game(self, plus_player_func, minus_player_func, log=False, board_state=None):
         """Run a single game of until the end, using the provided function args to determine the moves for each

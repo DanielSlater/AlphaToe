@@ -216,8 +216,8 @@ class TicTacToeXGameSpec(BaseGameSpec):
     def new_board(self):
         return _new_board(self._board_size)
 
-    def has_winner(self, board_sate):
-        return has_winner(board_sate, self._winning_length)
+    def has_winner(self, board_state):
+        return has_winner(board_state, self._winning_length)
 
     def board_dimensions(self):
         return self._board_size, self._board_size

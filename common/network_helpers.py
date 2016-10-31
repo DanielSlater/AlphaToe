@@ -1,11 +1,9 @@
 import operator
-from collections import namedtuple
-
-import tensorflow as tf
-import numpy as np
 import pickle
-
 from functools import reduce
+
+import numpy as np
+import tensorflow as tf
 
 
 def create_network(input_nodes, hidden_nodes, output_nodes=None, output_softmax=True):
@@ -52,8 +50,9 @@ def create_network(input_nodes, hidden_nodes, output_nodes=None, output_softmax=
         if isinstance(output_nodes, tuple):
             output_nodes = reduce(operator.mul, input_nodes, 1)
 
+        # for some reason having output std divided by np.sqrt(output_nodes) massively outperforms np.sqrt(hidden_nodes)
         output_weights = tf.Variable(
-            tf.truncated_normal((hidden_nodes, output_nodes), stddev=1. / np.sqrt(hidden_nodes)), name="output_weights")
+            tf.truncated_normal((hidden_nodes, output_nodes), stddev=1. / np.sqrt(output_nodes)), name="output_weights")
         output_bias = tf.Variable(tf.constant(0.01, shape=(output_nodes,)), name="output_bias")
 
         variables.append(output_weights)
@@ -90,8 +89,15 @@ def load_network(session, tf_variables, file_path):
     """
     with open(file_path, mode='rb') as f:
         variable_values = pickle.load(f)
-    for value, tf_variable in zip(variable_values, tf_variables):
-        session.run(tf_variable.assign(value))
+
+    try:
+        for value, tf_variable in zip(variable_values, tf_variables):
+            session.run(tf_variable.assign(value))
+    except ValueError as ex:
+        print(
+            "The saved network has different dimensions from the network created in memory %s, either delete/move the file %s to train a new network or restore the old architecture in code to continue training an old network" %
+            (ex, file_path))
+        raise
 
 
 def invert_board_state(board_state):
@@ -121,12 +127,13 @@ def get_stochastic_network_move(session, input_layer, output_layer, board_state,
     Returns:
         (np.array) It's shape is (board_squares), and it is a 1 hot encoding for the move the network has chosen.
     """
-    board_state_flat = np.ravel(board_state)
+    np_board_state = np.array(board_state)
     if side == -1:
-        board_state_flat = -board_state_flat
+        np_board_state = -np_board_state
 
+    np_board_state = np_board_state.reshape(1, *input_layer.get_shape().as_list()[1:])
     probability_of_actions = session.run(output_layer,
-                                         feed_dict={input_layer: [board_state_flat.ravel()]})[0]
+                                         feed_dict={input_layer: np_board_state})[0]
 
     try:
         move = np.random.multinomial(1, probability_of_actions)
