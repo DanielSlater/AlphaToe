@@ -50,8 +50,6 @@ def create_positions_set(game_spec, number_of_positions, choose_move_func, compr
     while number_of_positions > len(positions.keys()):
         game_spec.play_game(store_move_pair, store_move_pair)
         print(len(positions.keys()))
-        with open('position_connect_4_min_max_depth_8_' + str(len(positions.keys())), mode='wb') as f:
-            pickle.dump(positions, f)
 
     return positions
 
