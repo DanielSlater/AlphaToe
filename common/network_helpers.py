@@ -91,13 +91,16 @@ def load_network(session, tf_variables, file_path):
         variable_values = pickle.load(f)
 
     try:
+        if len(variable_values) != len(tf_variables):
+            raise ValueError("Network in file had different structure, variables in file: %s variables in memeory: %s"
+                             % (len(variable_values), len(tf_variables)))
         for value, tf_variable in zip(variable_values, tf_variables):
             session.run(tf_variable.assign(value))
     except ValueError as ex:
-        print(
-            "The saved network has different dimensions from the network created in memory %s, either delete/move the file %s to train a new network or restore the old architecture in code to continue training an old network" %
-            (ex, file_path))
-        raise
+        # TODO: maybe raise custom exception
+        raise ValueError("""Tried to load network file %s with different architecture from the in memory network.
+Error was %s
+Either delete the network file to train a new network from scratch or change the in memory network to match that dimensions of the one in the file""" % (file_path, ex))
 
 
 def invert_board_state(board_state):
@@ -109,10 +112,11 @@ def invert_board_state(board_state):
     Returns:
         (tuple of tuple of ints) The board state for the other player
     """
-    return tuple(tuple(-board_state(j, i) for i in range(len(board_state[0]))) for j in range(len(board_state)))
+    return tuple(tuple(-board_state[j][i] for i in range(len(board_state[0]))) for j in range(len(board_state)))
 
 
-def get_stochastic_network_move(session, input_layer, output_layer, board_state, side):
+def get_stochastic_network_move(session, input_layer, output_layer, board_state, side,
+                                valid_only=False, game_spec=None):
     """Choose a move for the given board_state using a stocastic policy. A move is selected using the values from the
      output_layer as a categorical probability distribution to select a single move
 
@@ -135,17 +139,33 @@ def get_stochastic_network_move(session, input_layer, output_layer, board_state,
     probability_of_actions = session.run(output_layer,
                                          feed_dict={input_layer: np_board_state})[0]
 
+    if valid_only:
+        available_moves = list(game_spec.available_moves(board_state))
+        if len(available_moves) == 1:
+            move = np.zeros(game_spec.board_squares())
+            np.put(move, game_spec.tuple_move_to_flat(available_moves[0]), 1)
+            return move
+        available_moves_flat = [game_spec.tuple_move_to_flat(x) for x in available_moves]
+        for i in range(game_spec.board_squares()):
+            if i not in available_moves_flat:
+                probability_of_actions[i] = 0.
+
+        prob_mag = sum(probability_of_actions)
+        if prob_mag != 0.:
+            probability_of_actions /= sum(probability_of_actions)
+
     try:
         move = np.random.multinomial(1, probability_of_actions)
     except ValueError:
         # sometimes because of rounding errors we end up with probability_of_actions summing to greater than 1.
         # so need to reduce slightly to be a valid value
-        move = np.random.multinomial(1, probability_of_actions / (sum(probability_of_actions) + 1e-7))
+        move = np.random.multinomial(1, probability_of_actions / (1. + 1e-6))
 
     return move
 
 
-def get_deterministic_network_move(session, input_layer, output_layer, board_state, side):
+def get_deterministic_network_move(session, input_layer, output_layer, board_state, side, valid_only=False,
+                                   game_spec=None):
     """Choose a move for the given board_state using a deterministic policy. A move is selected using the values from
     the output_layer and selecting the move with the highest score.
 
@@ -160,12 +180,20 @@ def get_deterministic_network_move(session, input_layer, output_layer, board_sta
     Returns:
         (np.array) It's shape is (board_squares), and it is a 1 hot encoding for the move the network has chosen.
     """
-    board_state_flat = np.ravel(board_state)
+    np_board_state = np.array(board_state)
+    np_board_state = np_board_state.reshape(1, *input_layer.get_shape().as_list()[1:])
     if side == -1:
-        board_state_flat = -board_state_flat
+        np_board_state = -np_board_state
 
     probability_of_actions = session.run(output_layer,
-                                         feed_dict={input_layer: [board_state_flat.ravel()]})[0]
+                                         feed_dict={input_layer: np_board_state})[0]
+
+    if valid_only:
+        available_moves = game_spec.available_moves(board_state)
+        available_moves_flat = [game_spec.tuple_move_to_flat(x) for x in available_moves]
+        for i in range(game_spec.board_squares()):
+            if i not in available_moves_flat:
+                probability_of_actions[i] = 0
 
     move = np.argmax(probability_of_actions)
     one_hot = np.zeros(len(probability_of_actions))

@@ -25,6 +25,18 @@ class BaseGameSpec(object):
     def has_winner(self, board_state):
         raise NotImplementedError()
 
+    def evaluate(self, board_state):
+        """An evaluation function for this game, gives an estimate of how good the board position is for the plus player.
+        There is no specific range for the values returned, they just need to be relative to each other.
+
+        Args:
+            board_state (tuple): State of the board
+
+        Returns:
+            number
+        """
+        raise NotImplementedError()
+
     def board_dimensions(self):
         """Returns the dimensions of the board for this game
 
@@ -37,7 +49,7 @@ class BaseGameSpec(object):
         """The number of squares on the board. This can be used for the number of input nodes to a network.
 
         Returns:
-
+            int
         """
         return reduce(operator.mul, self.board_dimensions(), 1)
 
@@ -67,6 +79,20 @@ class BaseGameSpec(object):
 
         board_x = self.board_dimensions()[0]
         return int(move_index / board_x), move_index % board_x
+
+    def tuple_move_to_flat(self, tuple_move):
+        """Does the inverse operation to flat_move_to_tuple
+
+        Args:
+            tuple_move (tuple):
+
+        Returns:
+            int :
+        """
+        if len(self.board_dimensions()) == 1:
+            return tuple_move[0]
+        else:
+            return tuple_move[0] * self.board_dimensions()[0] + tuple_move[1]
 
     def play_game(self, plus_player_func, minus_player_func, log=False, board_state=None):
         """Run a single game of until the end, using the provided function args to determine the moves for each

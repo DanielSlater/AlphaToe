@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from games.tic_tac_toe_x import has_winner, _has_winning_line, play_game, random_player
+from games.tic_tac_toe_x import has_winner, _has_winning_line, play_game, random_player, evaluate
 
 
 class TestTicTacToeX(TestCase):
@@ -43,3 +43,32 @@ class TestTicTacToeX(TestCase):
 
     def test_play_game(self):
         play_game(random_player, random_player)
+
+    def test_has_evaluate(self):
+        board_state = ((-1, -1, -1, 0, 0),
+                       (0, 0, 0, 0, 0),
+                       (0, -1, 0, 0, 0),
+                       (0, -1, 0, 0, 0),
+                       (0, -1, 0, 0, 0))
+        self.assertGreater(0, evaluate(board_state, 4))
+
+        board_state = ((0, 1, 0, 0, 0),
+                       (0, 0, 1, 0, 0),
+                       (0, 0, 0, 0, 0),
+                       (0, 0, 0, 0, 1),
+                       (0, 0, 0, 0, 0))
+        self.assertGreater(evaluate(board_state, 4), 0)
+
+        board_state = ((0, 0, 0, 0, 0),
+                       (0, 0, 0, 0, 1),
+                       (0, 0, 0, 0, 0),
+                       (0, 0, 1, 0, 0),
+                       (0, 1, 1, 0, 0))
+        self.assertGreater(evaluate(board_state, 4), 0)
+
+        board_state = ((0, 0, 0, -1, 0),
+                       (0, 0, 0, 0, 0),
+                       (0, 0, 0, 0, 0),
+                       (-1, 0, 0, 0, 0),
+                       (0, 0, 0, 0, 0))
+        self.assertGreater(0, evaluate(board_state, 4))

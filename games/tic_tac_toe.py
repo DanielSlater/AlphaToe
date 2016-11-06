@@ -13,6 +13,7 @@ import itertools
 import random
 
 from common.base_game_spec import BaseGameSpec
+from techniques.min_max import evaluate
 
 
 def _new_board():
@@ -166,6 +167,7 @@ class TicTacToeGameSpec(BaseGameSpec):
         self.has_winner = has_winner
         self.new_board = _new_board
         self.apply_move = apply_move
+        self.evaluate = evaluate
 
     def board_dimensions(self):
         return 3, 3

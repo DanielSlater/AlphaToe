@@ -12,6 +12,7 @@ return a copy of a given state with a given move applied. This can be useful for
 import random
 
 from common.base_game_spec import BaseGameSpec
+from games.tic_tac_toe_x import evaluate
 
 
 def _new_board(board_width, board_height):
@@ -219,6 +220,9 @@ class Connect4GameSpec(BaseGameSpec):
 
     def outputs(self):
         return self._board_width
+
+    def evaluate(self, board_state):
+        return evaluate(board_state, self._winning_length)
 
 if __name__ == '__main__':
     # example of playing a game
