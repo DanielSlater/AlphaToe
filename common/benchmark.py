@@ -40,7 +40,7 @@ def benchmark(game_spec, network_file_path, create_network_func, log_games=False
             return monte_carlo_tree_search_uct(game_spec, board_state, side, 100000)[1]
 
         results = []
-        for _ in range(games_vs_random / 2):
+        for _ in range(int(games_vs_random / 2)):
             result = game_spec.play_game(make_move,
                                          game_spec.get_random_player_func(),
                                          log=log_games)

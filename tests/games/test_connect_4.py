@@ -27,4 +27,3 @@ class TestTicTacToeX(TestCase):
 
     def test_play_game(self):
         play_game(random_player, random_player)
-

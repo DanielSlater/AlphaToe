@@ -19,21 +19,19 @@ import functools
 
 from common.network_helpers import create_network
 from games.tic_tac_toe import TicTacToeGameSpec
-from games.tic_tac_toe_x import TicTacToeXGameSpec
 from techniques.train_policy_gradient import train_policy_gradients
 
-HIDDEN_NODES = (100, 100, 100)
 BATCH_SIZE = 100  # every how many games to do a parameter update?
-LEARN_RATE = 1e-6
+LEARN_RATE = 1e-4
 PRINT_RESULTS_EVERY_X = 1000  # every how many games to print the results
 NETWORK_FILE_PATH = None#'current_network.p'  # path to save the network to
 NUMBER_OF_GAMES_TO_RUN = 1000000
 
 # to play a different game change this to another spec, e.g TicTacToeXGameSpec or ConnectXGameSpec, to get these to run
 # well may require tuning the hyper parameters a bit
-game_spec = TicTacToeXGameSpec(4, 3)
+game_spec = TicTacToeGameSpec()
 
-create_network_func = functools.partial(create_network, game_spec.board_squares(), (300, 200, 100, 100))
+create_network_func = functools.partial(create_network, game_spec.board_squares(), (100, 100, 100))
 
 train_policy_gradients(game_spec, create_network_func, NETWORK_FILE_PATH,
                        number_of_games=NUMBER_OF_GAMES_TO_RUN,

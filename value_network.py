@@ -15,8 +15,8 @@ from common.network_helpers import create_network, load_network, save_network, \
     get_deterministic_network_move
 from games.tic_tac_toe import TicTacToeGameSpec
 
-HIDDEN_NODES_VALUE = (120, 100, 80, 60, 40)
-HIDDEN_NODES_REINFORCEMENT = (100, 80, 60, 40)
+HIDDEN_NODES_VALUE = (100, 100, 100)
+HIDDEN_NODES_REINFORCEMENT = (100, 100, 100)
 BATCH_SIZE = 100  # every how many games to do a parameter update?
 LEARN_RATE = 1e-4
 REINFORCEMENT_NETWORK_PATH = 'current_network.p'

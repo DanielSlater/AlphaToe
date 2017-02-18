@@ -18,7 +18,7 @@ from common.network_helpers import create_network, load_network, get_stochastic_
 from games.tic_tac_toe import TicTacToeGameSpec
 from techniques.train_policy_gradient_historic import train_policy_gradients_vs_historic
 
-HIDDEN_NODES = (100, 80, 60, 40)
+HIDDEN_NODES = (100, 100, 100)
 SAVE_HISTORICAL_NETWORK_EVERY = 10000
 game_spec = TicTacToeGameSpec()
 
