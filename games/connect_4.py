@@ -219,7 +219,7 @@ class Connect4GameSpec(BaseGameSpec):
         return move_index
 
     def outputs(self):
-        return self._board_width
+        return self._board_width * self._board_height
 
     def evaluate(self, board_state):
         return evaluate(board_state, self._winning_length)
