@@ -45,7 +45,7 @@ def train_value_network(game_spec, hidden_nodes_reinforcement, reinforcement_net
     train_step = tf.train.RMSPropOptimizer(learn_rate).minimize(error)
 
     with tf.Session() as session:
-        session.run(tf.initialize_all_variables())
+        session.run(tf.global_variables_initializer())
 
         load_network(session, reinforcement_variables, reinforcement_network_file_path)
 

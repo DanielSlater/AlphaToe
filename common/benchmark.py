@@ -25,7 +25,7 @@ def benchmark(game_spec, network_file_path, create_network_func, log_games=False
     input_layer, output_layer, variables = create_network_func()
 
     with tf.Session() as session:
-        session.run(tf.initialize_all_variables())
+        session.run(tf.global_variables_initializer())
         load_network(session, variables, network_file_path)
 
         def make_move(board_state, side):
