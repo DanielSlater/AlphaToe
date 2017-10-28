@@ -59,7 +59,7 @@ def train_supervised(game_spec, create_network, network_file_path,
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
 
     with tf.Session() as session:
-        session.run(tf.initialize_all_variables())
+        session.run(tf.global_variables_initializer())
 
         if os.path.isfile(network_file_path):
             print("loading existing network")

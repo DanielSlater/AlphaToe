@@ -33,7 +33,7 @@ class TestNetworkHelpers(TestCase):
             _, _, variables2 = create_network(input_nodes, hidden_nodes)
 
             with tf.Session() as session:
-                session.run(tf.initialize_all_variables())
+                session.run(tf.global_variables_initializer())
 
                 save_network(session, variables1, file_name)
                 load_network(session, variables2, file_name)
@@ -55,7 +55,7 @@ class TestNetworkHelpers(TestCase):
             _, _, variables2 = create_network(input_nodes, (40, ))
 
             with tf.Session() as session:
-                session.run(tf.initialize_all_variables())
+                session.run(tf.global_variables_initializer())
 
                 save_network(session, variables1, file_name)
 

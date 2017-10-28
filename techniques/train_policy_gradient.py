@@ -50,7 +50,7 @@ def train_policy_gradients(game_spec,
     train_step = tf.train.AdamOptimizer(learn_rate).minimize(-policy_gradient)
 
     with tf.Session() as session:
-        session.run(tf.initialize_all_variables())
+        session.run(tf.global_variables_initializer())
 
         if network_file_path and os.path.isfile(network_file_path):
             print("loading pre-existing network")

@@ -58,7 +58,7 @@ def train_policy_gradients_vs_historic(game_spec, create_network, network_file_p
         historical_networks.append((historical_input_layer, historical_output_layer, historical_variables))
 
     with tf.Session() as session:
-        session.run(tf.initialize_all_variables())
+        session.run(tf.global_variables_initializer())
 
         def make_move_historical(histoical_network_index, board_state, side):
             net = historical_networks[histoical_network_index]
