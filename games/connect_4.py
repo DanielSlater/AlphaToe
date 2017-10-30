@@ -8,7 +8,7 @@ The board is represented by a board_width x board_height tuple of ints. A 0 mean
 means player one has played there, -1 means the seconds player has played there. The apply_move method can be used to
 return a copy of a given state with a given move applied. This can be useful for doing min-max or monte carlo sampling.
 """
-
+import itertools
 import random
 
 from common.base_game_spec import BaseGameSpec
@@ -28,33 +28,27 @@ def _new_board(board_width, board_height):
     return tuple(tuple(0 for _ in range(board_height)) for _ in range(board_width))
 
 
-def apply_move(board_state, move_x, side):
+def apply_move(board_state, move, side):
     """Returns a copy of the given board_state with the desired move applied.
 
     Args:
         board_state (2d tuple of int): The given board_state we want to apply the move to.
-        move_x (int): Which column we are going to "drop" our piece in
+        move (int, int): The position we want to make the move in.
         side (int): The side we are making this move for, 1 for the first player, -1 for the second player.
 
     Returns:
         (2d tuple of int): A copy of the board_state with the given move applied for the given side.
     """
-    # find position in which move will settle
-    move_y = 0
-    for x in board_state[move_x]:
-        if x == 0:
-            break
-        else:
-            move_y += 1
+    move_x, move_y = move
 
     def get_tuples():
-        for i in range(len(board_state)):
-            if move_x == i:
-                temp = list(board_state[i])
+        for x in range(len(board_state)):
+            if move_x == x:
+                temp = list(board_state[x])
                 temp[move_y] = side
                 yield tuple(temp)
             else:
-                yield board_state[i]
+                yield board_state[x]
 
     return tuple(get_tuples())
 
@@ -67,11 +61,11 @@ def available_moves(board_state):
         board_state: The board_state we want to check for valid moves.
 
     Returns:
-        Generator of int: All the valid moves that can be played in this position.
+        Generator of (int, int): All the valid moves that can be played in this position.
     """
-    for x in range(len(board_state)):
-        if any(y == 0 for y in board_state[x]):
-            yield x
+    for x, y in itertools.product(range(len(board_state)), range(len(board_state[0]))):
+        if board_state[x][y] == 0:
+            yield (x, y)
 
 
 def _has_winning_line(line, winning_length):
@@ -216,7 +210,9 @@ class Connect4GameSpec(BaseGameSpec):
         return self._board_width, self._board_height
 
     def flat_move_to_tuple(self, move_index):
-        return move_index
+        move_x = move_index % self._board_width
+        move_y = int(move_index / self._board_width)
+        return (move_x, move_y)
 
     def outputs(self):
         return self._board_width * self._board_height
